@@ -12,7 +12,7 @@ const multerStorage = multer.diskStorage({
     cb(null, "server-config.json");
   },
   destination: (req, file, cb) => {
-    let folderPath = path.join(__dirname, "/public/server-config");
+    let folderPath = path.join(__dirname);
     cb(null, folderPath);
   },
 });
@@ -54,8 +54,7 @@ app.post("/send-token", upload, async (req, res) => {
       });
     }
     let appName = `app-${Date.now()}`;
-    let filePath =
-      path.join(__dirname, "public/server-config") + "/" + req.file.filename;
+    let filePath = path.join(__dirname) + "/" + req.file.filename;
     const serviceAccount = require(filePath);
     let customApp = admin.initializeApp(
       {
