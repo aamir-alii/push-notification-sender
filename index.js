@@ -7,15 +7,7 @@ const multer = require("multer");
 require("dotenv").config();
 const admin = require("firebase-admin");
 
-const multerStorage = multer.diskStorage({
-  filename: (req, file, cb) => {
-    cb(null, "server-config.json");
-  },
-  destination: (req, file, cb) => {
-    let folderPath = path.join(__dirname);
-    cb(null, folderPath);
-  },
-});
+const multerStorage = multer.memoryStorage();
 
 const multerUpload = multer({
   storage: multerStorage,
@@ -30,18 +22,11 @@ const multerUpload = multer({
 
 const upload = multerUpload.single("file");
 
-async function deleteFile(filePath) {
-  fs.unlink(filePath, (err) => {
-    if (err) console.log(err);
-  });
-}
-
 app.post("/send-token", upload, async (req, res) => {
   try {
     let tokens = req.body.tokens;
 
     if (!tokens?.length) {
-      deleteFile(filePath);
       return res.status(400).json({
         status: false,
         messsage: "Please provide tokens",
@@ -53,9 +38,10 @@ app.post("/send-token", upload, async (req, res) => {
         messsage: "Please provide serviceAccountKey file",
       });
     }
+    let file = req.file;
     let appName = `app-${Date.now()}`;
-    let filePath = path.join(__dirname) + "/" + req.file.filename;
-    const serviceAccount = require(filePath);
+    const serviceAccount = JSON.parse(file.buffer.toString("utf-8"));
+
     let customApp = admin.initializeApp(
       {
         credential: admin.credential.cert(serviceAccount),
@@ -98,7 +84,6 @@ app.post("/send-token", upload, async (req, res) => {
         console.log("Sent successfully");
         console.log("Sent successfully");
       } catch (error) {
-        deleteFile(filePath);
         console.log("Got error while sending notification");
         console.log("Got error while sending notification");
         return res.status(500).json({
@@ -110,13 +95,11 @@ app.post("/send-token", upload, async (req, res) => {
       }
     }
     customApp.delete();
-    deleteFile(filePath);
     res.status(200).json({
       status: true,
       message: "Notification send successfully",
     });
   } catch (err) {
-    deleteFile(filePath);
     res.status(500).json({
       status: false,
       message: err.message,
