@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const path = require("path");
 const fs = require("fs");
+const { mkdirp } = require("mkdirp");
 const multer = require("multer");
 require("dotenv").config();
 const admin = require("firebase-admin");
@@ -29,13 +30,26 @@ const multerUpload = multer({
 
 const upload = multerUpload.single("file");
 
+async function makeDirectory(req, res, next) {
+  try {
+    await mkdirp(path.join(__dirname, "public/server-config"));
+    next();
+  } catch (err) {
+    res.status(500).json({
+      status: false,
+      message: err.message,
+      error: err,
+    });
+  }
+}
+
 async function deleteFile(filePath) {
   fs.unlink(filePath, (err) => {
     if (err) console.log(err);
   });
 }
 
-app.post("/send-token", upload, async (req, res) => {
+app.post("/send-token", makeDirectory, upload, async (req, res) => {
   try {
     let tokens = req.body.tokens;
 
