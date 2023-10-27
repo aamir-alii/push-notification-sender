@@ -53,7 +53,8 @@ app.post("/send-token", upload, async (req, res) => {
       });
     }
     let appName = `app-${Date.now()}`;
-    let filePath = req.file.destination + "/" + req.file.filename;
+    let filePath =
+      path.join(__dirname, "public/server-config") + "/" + req.file.filename;
     const serviceAccount = require(filePath);
     let customApp = admin.initializeApp(
       {
