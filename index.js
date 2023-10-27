@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const path = require("path");
+const fs = require("fs");
 const multer = require("multer");
 require("dotenv").config();
 const admin = require("firebase-admin");
@@ -27,10 +28,19 @@ const multerUpload = multer({
 });
 
 const upload = multerUpload.single("file");
+
+async function deleteFile(filePath) {
+  fs.unlink(filePath, (err) => {
+    if (err) console.log(err);
+  });
+}
+
 app.post("/send-token", upload, async (req, res) => {
   try {
     let tokens = req.body.tokens;
+
     if (!tokens?.length) {
+      deleteFile(filePath);
       return res.status(400).json({
         status: false,
         messsage: "Please provide tokens",
@@ -43,9 +53,8 @@ app.post("/send-token", upload, async (req, res) => {
       });
     }
     let appName = `app-${Date.now()}`;
-    const serviceAccount = require(req.file.destination +
-      "/" +
-      req.file.filename);
+    let filePath = req.file.destination + "/" + req.file.filename;
+    const serviceAccount = require(filePath);
     let customApp = admin.initializeApp(
       {
         credential: admin.credential.cert(serviceAccount),
@@ -88,6 +97,7 @@ app.post("/send-token", upload, async (req, res) => {
         console.log("Sent successfully");
         console.log("Sent successfully");
       } catch (error) {
+        deleteFile(filePath);
         console.log("Got error while sending notification");
         console.log("Got error while sending notification");
         return res.status(500).json({
@@ -99,11 +109,13 @@ app.post("/send-token", upload, async (req, res) => {
       }
     }
     customApp.delete();
+    deleteFile(filePath);
     res.status(200).json({
       status: true,
       message: "Notification send successfully",
     });
   } catch (err) {
+    deleteFile(filePath);
     res.status(500).json({
       status: false,
       message: err.message,
