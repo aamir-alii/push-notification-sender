@@ -1,7 +1,5 @@
 const express = require("express");
 const app = express();
-const path = require("path");
-const fs = require("fs");
 
 const multer = require("multer");
 require("dotenv").config();
@@ -91,7 +89,6 @@ app.post("/send-token", upload, async (req, res) => {
           message: error.message,
           error,
         });
-        console.log(error);
       }
     }
     customApp.delete();
