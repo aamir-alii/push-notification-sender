@@ -22,8 +22,7 @@ const upload = multerUpload.single("file");
 
 app.post("/send-token", upload, async (req, res) => {
   try {
-    let tokens = req.body.tokens;
-
+    let { tokens, data } = req.body;
     if (!tokens?.length) {
       return res.status(400).json({
         status: false,
@@ -46,49 +45,24 @@ app.post("/send-token", upload, async (req, res) => {
       },
       appName
     );
+    data = JSON.parse(data);
     for (let i = 0; i < tokens.length; i++) {
       let token = tokens[i];
-      console.log(token);
-      if (!token?.length <= 0) continue;
+      if (token?.length <= 0) {
+        continue;
+      }
       try {
-        await customApp.messaging().send({
-          token,
-          data: {
-            roomId: "1" ?? "",
-            alarmId: "1" ?? "",
-            alarmSound: "sound1" ?? "",
-            severity: "1" ?? "",
-            roomData: "",
-          },
-          notification: {
-            title: "Dummy Title",
-            body: "Dummy body",
-          },
-          android: {
-            notification: {
-              channel_id: `360alerts${"sound1"}${1}`,
-            },
-          },
-          apns: {
-            payload: {
-              aps: {
-                sound: "smsmedium.mp3", // Replace with your custom sound file name (iOS)
-              },
-            },
-          },
-        });
+        data.token = token;
+        await customApp.messaging().send(data);
         console.log("Sent successfully");
         console.log("Sent successfully");
         console.log("Sent successfully");
         console.log("Sent successfully");
       } catch (error) {
+        console.log("error token", token);
         console.log("Got error while sending notification");
         console.log("Got error while sending notification");
-        return res.status(500).json({
-          status: false,
-          message: error.message,
-          error,
-        });
+        console.log(error);
       }
     }
     customApp.delete();
