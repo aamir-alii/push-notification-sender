@@ -64,6 +64,11 @@ app.post("/send-token", upload, async (req, res) => {
         console.log("Got error while sending notification");
         console.log("Got error while sending notification");
         console.log(error);
+        return res.status(400).json({
+          status: false,
+          message: error.message,
+          error,
+        });
       }
     }
     customApp.delete();
