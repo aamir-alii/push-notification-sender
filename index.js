@@ -53,13 +53,14 @@ app.post("/send-token", upload, async (req, res) => {
       }
       try {
         data.token = token;
+        console.log(data);
         await customApp.messaging().send(data);
         console.log("Sent successfully");
         console.log("Sent successfully");
         console.log("Sent successfully");
         console.log("Sent successfully");
       } catch (error) {
-        console.log("error token", token);
+        console.log("error token", tokens);
         console.log("Got error while sending notification");
         console.log("Got error while sending notification");
         console.log(error);
